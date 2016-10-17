@@ -1,0 +1,31 @@
+{
+  "name": "hubot-line-message-api",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/line-message-api.coffee",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notok/hubot-line-trial.git"
+  },
+  "keywords": [
+    "hubot",
+    "line",
+    "message",
+    "adapter"
+  ],
+  "author": "yukieroero",
+  "license": "MIT",
+  "dependencies": {
+    "parent-require": "^1.0.0",
+    "request": "^2.75.0"
+  },
+  "peerDependencies": {
+    "hubot": ">=2.0"
+  },
+  "devDependencies": {
+    "coffee-script": ">=1.2.0"
+  }
+}
