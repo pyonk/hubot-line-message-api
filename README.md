@@ -32,3 +32,29 @@
                 uri: 'http://example.com/'
             ]
     ```
+    * カルーセル
+    [https://devdocs.line.me/ja/#carousel](https://devdocs.line.me/ja/#carousel)
+    ```
+    res.reply
+        type: 'carousel'
+        content:[
+            image: 'https://example.com/images/image.jpg'
+            title: 'this is Buttons'
+            text: 'buttons description'
+            actions:[
+                type: 'uri'
+                label: 'Open in Browser'
+                uri: 'http://example.com/'
+            ],
+            image: 'https://example.com/images/image.jpg'
+            title: 'this is Buttons'
+            text: 'buttons description'
+            actions:[
+                type: 'uri'
+                label: 'Open in Browser'
+                uri: 'http://example.com/'
+            ]...
+        ]
+            
+    ```
+

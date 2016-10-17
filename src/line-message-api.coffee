@@ -74,6 +74,8 @@ class LineMessageApiAdapter extends Adapter
                     data = @getDataForReplyImage(envelope, string)
                 when 'buttons'
                     data = @getDataForReplyButtons(envelope, string)
+                when 'carousel'
+                    data = @getDataForReplyCarousel(envelope, string)
             console.log data
             request
                 url: replyEP
@@ -127,5 +129,21 @@ class LineMessageApiAdapter extends Adapter
                 actions: string.content.actions
         return data
 
+    getDataForReplyCarousel: (envelope, string) ->
+        data = @_getDataForReply(envelope)
+        columns = string.content.map((item) ->
+            thumbnailImageUrl: item.image
+            title: item.title
+            text: item.text
+            actions: item.actions
+        )
+        data.messages = data.messages.concat
+            type: 'template'
+            altText: 'this is a Carousel template'
+            template:
+                type: 'carousel'
+                columns: columns
+        return data
+
 exports.use = (robot) ->
-  new LineMessageApiAdapter(robot)
+    new LineMessageApiAdapter(robot)
