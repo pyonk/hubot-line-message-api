@@ -120,7 +120,7 @@ class LineMessageApiAdapter extends Adapter
         data = @_getDataForReply(envelope)
         data.messages = data.messages.concat
             type: 'template'
-            altText: 'this is a buttons template'
+            altText: string.altText ? ''
             template:
                 type: 'buttons'
                 thumbnailImageUrl: string.content.image
