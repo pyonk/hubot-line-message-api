@@ -139,7 +139,7 @@ class LineMessageApiAdapter extends Adapter
         )
         data.messages = data.messages.concat
             type: 'template'
-            altText: 'this is a Carousel template'
+            altText: string.altText ? ''
             template:
                 type: 'carousel'
                 columns: columns

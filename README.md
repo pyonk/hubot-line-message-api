@@ -22,6 +22,7 @@
     ```
     res.reply
         type: 'buttons'
+        altText: 'hogehoge'
         content:
             image: 'https://example.com/images/image.jpg'
             title: 'this is Buttons'
@@ -37,6 +38,7 @@
     ```
     res.reply
         type: 'carousel'
+        altText: 'hogehoge'
         content:[
             image: 'https://example.com/images/image.jpg'
             title: 'this is Buttons'
@@ -55,6 +57,5 @@
                 uri: 'http://example.com/'
             ]...
         ]
-            
     ```
 
