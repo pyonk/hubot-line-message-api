@@ -1,18 +1,19 @@
 try
-  {Robot,Adapter,TextMessage,User} = require 'hubot'
+    {Robot,Adapter,TextMessage,User} = require "hubot"
 catch
-  prequire = require('parent-require')
-  {Robot,Adapter,TextMessage,User} = prequire 'hubot'
-request = require 'request'
-pushEP = 'https://api.line.me/v2/bot/message/push'
-replyEP = 'https://api.line.me/v2/bot/message/reply'
+    prequire = require "parent-require"
+    {Robot,Adapter,TextMessage,User} = prequire "hubot"
+request = require "request"
+pushEP = "https://api.line.me/v2/bot/message/push"
+replyEP = "https://api.line.me/v2/bot/message/reply"
 
 
 
 class LineMessageApiAdapter extends Adapter
+    data: {}
     run: ->
-        @endpoint = process.env.HUBOT_ENDPOINT ? '/hubot/incoming'
-        @channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN ? ''
+        @endpoint = process.env.HUBOT_ENDPOINT ? "/hubot/incoming"
+        @channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN ? ""
         unless @channelAccessToken?
             @robot.logger.emergency "LINE_CHANNEL_ACCESS_TOKEN is required"
             process.exit 1
@@ -22,22 +23,24 @@ class LineMessageApiAdapter extends Adapter
             events = req.body.events
             for event in events
                 {replyToken, type, source, message} = event
-                if message.type isnt "text"
-                    console.log "This is not 'text' message."
-                    # TODO: text以外の処理
-                switch source.type
-                    when "user"
-                        from = source.userId
-                    when "group"
-                        from = source.groupId
-                    when "room"
-                        from = source.roomId
-                text = message.text ? ''
-                console.log "from: #{source.type} => #{from}"
-                console.log "text: #{text}"
-                user = @robot.brain.userForId replyToken
-                @receive new TextMessage(user, text, message.id)
-            @emit 'connected'
+                switch message.type
+                    when "text", "postback"
+                        switch source.type
+                            when "user"
+                                from = source.userId
+                            when "group"
+                                from = source.groupId
+                            when "room"
+                                from = source.roomId
+                        text = message.text ? ""
+                        console.log "from: #{source.type} => #{from}"
+                        console.log "text: #{text}"
+                        user = @robot.brain.userForId replyToken
+                        @receive new TextMessage(user, text, message.id)
+                    else
+                        console.log "This is not TEXT message."
+                        # TODO: text以外の処理
+            @emit "connected"
 
     send: (envelope, strings...) ->
         headers =
@@ -54,8 +57,8 @@ class LineMessageApiAdapter extends Adapter
         options =
             url: pushEP
             headers: headers
-            method: 'POST'
-            proxy: process.env.FIXIE_URL ? ''
+            method: "POST"
+            proxy: process.env.FIXIE_URL ? ""
             body: JSON.stringify(data)
         request options, (err, response, body) ->
             throw err if err
@@ -66,84 +69,114 @@ class LineMessageApiAdapter extends Adapter
               console.log "response error: #{response.statusCode}"
               console.log body
     reply: (envelope, strings...) ->
+        @_updateDataForReply(envelope)
         for string in strings
             switch string.type
-                when 'text'
-                    data = @getDataForReplyText(envelope, string)
-                when 'image'
-                    data = @getDataForReplyImage(envelope, string)
-                when 'buttons'
-                    data = @getDataForReplyButtons(envelope, string)
-                when 'carousel'
-                    data = @getDataForReplyCarousel(envelope, string)
-            console.log data
-            request
-                url: replyEP
-                headers:
-                    "Content-Type": "application/json"
-                    "Authorization": "Bearer #{@channelAccessToken}"
-                method: 'POST'
-                proxy: process.env.FIXIE_URL ? ''
-                body: JSON.stringify(data),
-                (err, response, body) ->
-                    throw err if err
-                    if response.statusCode is 200
-                      console.log "success"
-                      console.log body
-                    else
-                      console.log "response error: #{response.statusCode}"
-                      console.log body
+                when "text"
+                    @updateDataForReplyText(string, @data)
+                when "image", "video"
+                    @updateDataForReplyImageVideo(string, @data)
+                when "audio"
+                    @updateDataForReplyAudio(string, @data)
+                when "location"
+                    @updateDataForReplyLocation(string, @data)
+                when "sticker"
+                    @updateDataForReplySticker(string, @data)
+                when "buttons"
+                    @updateDataForReplyButtons(string, @data)
+                when "carousel"
+                    @updateDataForReplyCarousel(string, @data)
+                else
+                    @robot.logger.emergency "Unrecognized type #{string.type}"
+                    process.exit 1
+        console.log @data
+        request
+            url: replyEP
+            headers:
+                "Content-Type": "application/json"
+                "Authorization": "Bearer #{@channelAccessToken}"
+            method: "POST"
+            proxy: process.env.FIXIE_URL ? ""
+            body: JSON.stringify(@data),
+            (err, response, body) ->
+                throw err if err
+                if response.statusCode is 200
+                  console.log "success"
+                  console.log body
+                else
+                  console.log "response error: #{response.statusCode}"
+                  console.log body
 
-    _getDataForReply: (envelope) ->
+    _updateDataForReply: (envelope) ->
         replyToken = envelope.user.id
-        data =
+        @data =
             replyToken: replyToken
             messages: []
-        return data
 
-    getDataForReplyText: (envelope, string) ->
-        data = @_getDataForReply(envelope)
-        data.messages = data.messages.concat
-            type: "text"
-            text: string.content
-        return data
+    updateDataForReplyText: (string, data) ->
+        for content in string.contents
+            data.messages.push
+                type: "text"
+                text: content
 
-    getDataForReplyImage: (envelope, string) ->
-        data = @_getDataForReply(envelope)
-        data.messages = data.messages.concat
-            type: "image"
-            originalContentUrl: string.content.original
-            previewImageUrl: string.content.preview
-        return data
+    updateDataForReplyImageVideo: (string, data) ->
+        for content in string.contents
+            data.messages.push
+                type: string.type
+                originalContentUrl: content.original
+                previewImageUrl: content.preview
 
-    getDataForReplyButtons: (envelope, string) ->
-        data = @_getDataForReply(envelope)
-        data.messages = data.messages.concat
-            type: 'template'
-            altText: string.altText ? ''
+    updateDataForReplyAudio: (string, data) ->
+        for content in string.contents
+            data.messages.push
+                type: string.type
+                originalContentUrl: content.original
+                # TODO: validation number
+                duration: content.duration
+
+    updateDataForReplyLocation: (string, data) ->
+        for content in string.contents
+            data.messages.push
+                type: "location"
+                title: content.title
+                address: content.address
+                # TODO: validation number
+                latitude: content.latitude
+                longitude: content.longitude
+
+    updateDataForReplySticker: (string, data) ->
+        for content in string.contents
+            data.messages.push
+                type: string.type
+                packageId: content.package
+                sticker: content.sticker
+
+    updateDataForReplyButtons: (string, data) ->
+        for content in string.contents
+            data.messages.push
+                type: "template"
+                altText: string.altText ? "Hello Line Bot"
+                template:
+                    type: "buttons"
+                    thumbnailImageUrl: content.image
+                    title: content.title
+                    text: content.text
+                    actions: content.actions
+
+    updateDataForReplyCarousel: (string, data) ->
+        columns = []
+        for content in string.contents
+            columns.push
+                thumbnailImageUrl: content.image
+                title: content.title
+                text: content.text
+                actions: content.actions
+        data.messages.push
+            type: "template"
+            altText: string.altText ? "Hello Line Bot"
             template:
-                type: 'buttons'
-                thumbnailImageUrl: string.content.image
-                title: string.content.title
-                text: string.content.text
-                actions: string.content.actions
-        return data
-
-    getDataForReplyCarousel: (envelope, string) ->
-        data = @_getDataForReply(envelope)
-        columns = string.content.map((item) ->
-            thumbnailImageUrl: item.image
-            title: item.title
-            text: item.text
-            actions: item.actions
-        )
-        data.messages = data.messages.concat
-            type: 'template'
-            altText: string.altText ? ''
-            template:
-                type: 'carousel'
+                type: "carousel"
                 columns: columns
-        return data
 
 exports.use = (robot) ->
     new LineMessageApiAdapter(robot)
