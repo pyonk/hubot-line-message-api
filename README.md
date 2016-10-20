@@ -24,90 +24,101 @@
     [https://devdocs.line.me/ja/#text](https://devdocs.line.me/ja/#text)
 
     ```coffee
-    res.reply
-        type: 'text'
-        contents: ['nyaa']
+    module.exports = (robot) ->
+        robot.hear /^テキスト$/, (res) ->
+            res.reply
+                type: 'text'
+                contents: ['nyaa']
     ```
     * 画像と動画
-
+ 
     [https://devdocs.line.me/ja/#image](https://devdocs.line.me/ja/#image)
     [https://devdocs.line.me/ja/#video](https://devdocs.line.me/ja/#video)
 
     ```coffee
-    res.reply
-        type:'image'
-        content: [
-            original: 'https://example.com/images/image.jpg'
-            preview: 'https://example.com/images/image.jpg'
-        ]
+    module.exports = (robot) ->
+        robot.hear /^画像$/, (res) ->
+            res.reply
+                type:'image'# 'video'
+                content: [
+                    original: 'https://example.com/images/image.jpg'
+                    preview: 'https://example.com/images/image.jpg'
+                ]
     ```
     * ボタン
 
     [https://devdocs.line.me/ja/#buttons](https://devdocs.line.me/ja/#buttons)
 
     ```coffee
-    res.reply
-        type: 'buttons'
-        altText: 'hogehoge'
-        contents: [
-            image: 'https://example.com/images/image.jpg'
-            title: 'this is Buttons'
-            text: 'buttons description'
-            actions:[
-                type: 'uri'
-                label: 'Open in Browser'
-                uri: 'http://example.com/'
-            ]
-        ]
+    module.exports = (robot) ->
+        robot.hear /^テキスト$/, (res) ->
+            res.reply
+                type: 'buttons'
+                altText: 'hogehoge'
+                contents: [
+                    image: 'https://example.com/images/image.jpg'
+                    title: 'this is Buttons'
+                    text: 'buttons description'
+                    actions:[
+                        type: 'uri'
+                        label: 'Open in Browser'
+                        uri: 'http://example.com/'
+                    ]
+                ]
     ```
     * カルーセル
 
     [https://devdocs.line.me/ja/#carousel](https://devdocs.line.me/ja/#carousel)
 
     ```coffee
-    res.reply
-        type: 'carousel'
-        altText: 'hogehoge'
-        contents: [
-            image: 'https://example.com/images/image.jpg'
-            title: 'this is Buttons'
-            text: 'buttons description'
-            actions:[
-                type: 'uri'
-                label: 'Open in Browser'
-                uri: 'http://example.com/'
-            ],
-            image: 'https://example.com/images/image.jpg'
-            title: 'this is Buttons'
-            text: 'buttons description'
-            actions:[
-                type: 'uri'
-                label: 'Open in Browser'
-                uri: 'http://example.com/'
-            ]...
-        ]
+    module.exports = (robot) ->
+        robot.hear /^カルーセル$/, (res) ->
+            res.reply
+                type: 'carousel'
+                altText: 'hogehoge'
+                contents: [
+                    image: 'https://example.com/images/image.jpg'
+                    title: 'this is Buttons'
+                    text: 'buttons description'
+                    actions:[
+                        type: 'uri'
+                        label: 'Open in Browser'
+                        uri: 'http://example.com/'
+                    ],
+                    image: 'https://example.com/images/image.jpg'
+                    title: 'this is Buttons'
+                    text: 'buttons description'
+                    actions:[
+                        type: 'uri'
+                        label: 'Open in Browser'
+                        uri: 'http://example.com/'
+                    ]...
+                ]
     ```
     * くみあわせ
 
     ```coffee
-    res.reply {
-        type: 'text'
-        contents: ['nyaa']
-    },
-    {
-        type: 'buttons'
-        contents: [
-            image: 'https://example.com/images/image.jpg'
-            title: 'this is Buttons'
-            text: 'buttons description'
-            actions: [
-                type: 'uri'
-                label: 'Open in Browser'
-                uri: 'http://example.com/'
-            ]
-        ]
-    }
+    module.exports = (robot) ->
+        robot.hear /^くみあわせ$/, (res) ->
+            res.reply {
+                type: 'text'
+                contents: ['nyaa']
+            },
+            {
+                type: 'buttons'
+                contents: [
+                    image: 'https://example.com/images/image.jpg'
+                    title: 'this is Buttons'
+                    text: 'buttons description'
+                    actions: [
+                        type: 'uri'
+                        label: 'Open in Browser'
+                        uri: 'http://example.com/'
+                    ]
+                ]
+            }
     ```
+
 
 # 注意点
 * `contents.length <= 5`にしないとLINEに怒られます。
