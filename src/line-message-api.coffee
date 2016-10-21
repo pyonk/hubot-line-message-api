@@ -86,6 +86,8 @@ class LineMessageApiAdapter extends Adapter
                     @updateDataForReplyButtons(string, @data)
                 when "carousel"
                     @updateDataForReplyCarousel(string, @data)
+                when "confirm"
+                    @updateDataForReplyConfirm(string, @data)
                 else
                     @robot.logger.emergency "Unrecognized type #{string.type}"
                     process.exit 1
@@ -178,5 +180,15 @@ class LineMessageApiAdapter extends Adapter
                 type: "carousel"
                 columns: columns
 
+    updateDataForReplyConfirm: (string, data) ->
+        for content in string.contents
+            data.messages.push
+                type: "template"
+                altText: string.altText ? "Hello Line Bot"
+                template:
+                    type: "confirm"
+                    text: content.text
+                    actions: content.actions
+ 
 exports.use = (robot) ->
     new LineMessageApiAdapter(robot)
