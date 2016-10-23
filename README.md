@@ -19,7 +19,7 @@
 今のところpushで送信は対応できておらず、返信しかできません。
 
 * 返信
-    * テキスト
+    * Text
 
     [https://devdocs.line.me/ja/#text](https://devdocs.line.me/ja/#text)
 
@@ -30,8 +30,8 @@
                 type: 'text'
                 contents: ['nyaa']
     ```
-    * 画像と動画
- 
+    * Image or Video
+
     [https://devdocs.line.me/ja/#image](https://devdocs.line.me/ja/#image)
     [https://devdocs.line.me/ja/#video](https://devdocs.line.me/ja/#video)
 
@@ -45,7 +45,7 @@
                     preview: 'https://example.com/images/image.jpg'
                 ]
     ```
-    * ボタン
+    * Button
 
     [https://devdocs.line.me/ja/#buttons](https://devdocs.line.me/ja/#buttons)
 
@@ -66,7 +66,30 @@
                     ]
                 ]
     ```
-    * カルーセル
+    * Confirm
+
+    [https://devdocs.line.me/ja/#confirm](https://devdocs.line.me/ja/#confirm)
+
+    ```coffee
+    module.exports = (robot) ->
+        robot.hear /^コンファーム$/, (res) ->
+            res.reply
+                type: 'confirm'
+                altText: 'hogehoge'
+                contents: [
+                    text: 'confirm description'
+                    actions:{
+                        type: 'message'
+                        label: 'Yes'
+                        text: 'yes'
+                    },{
+                        type: 'message'
+                        label: 'No'
+                        text: 'no'
+                    }
+                ]
+    ```
+    * Carousel
 
     [https://devdocs.line.me/ja/#carousel](https://devdocs.line.me/ja/#carousel)
 
@@ -78,16 +101,16 @@
                 altText: 'hogehoge'
                 contents: [
                     image: 'https://example.com/images/image.jpg'
-                    title: 'this is Buttons'
-                    text: 'buttons description'
+                    title: 'this is Carousel'
+                    text: 'carousel description'
                     actions:[
                         type: 'uri'
                         label: 'Open in Browser'
                         uri: 'http://example.com/'
                     ],
                     image: 'https://example.com/images/image.jpg'
-                    title: 'this is Buttons'
-                    text: 'buttons description'
+                    title: 'this is Carousel'
+                    text: 'carousel description'
                     actions:[
                         type: 'uri'
                         label: 'Open in Browser'
