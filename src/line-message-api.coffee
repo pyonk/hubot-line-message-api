@@ -35,7 +35,8 @@ class LineMessageApiAdapter extends Adapter
                         text = message.text ? ""
                         console.log "from: #{source.type} => #{from}"
                         console.log "text: #{text}"
-                        user = @robot.brain.userForId replyToken
+                        user = @robot.brain.userForId from
+                        user.replyToken = replyToken
                         @receive new TextMessage(user, text, message.id)
                     else
                         console.log "This is not TEXT message."
@@ -110,7 +111,7 @@ class LineMessageApiAdapter extends Adapter
                   console.log body
 
     _updateDataForReply: (envelope) ->
-        replyToken = envelope.user.id
+        replyToken = envelope.user.replyToken
         @data =
             replyToken: replyToken
             messages: []
