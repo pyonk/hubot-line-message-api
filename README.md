@@ -142,6 +142,19 @@
             }
     ```
 
+* コンテンツ受信
+    * イメージ受信
+
+    ```coffee
+    {ImageMessage} = require 'hubot-line-message-api'
+    
+    robot.hear /.*/, (res) ->
+        if res.message instanceof ImageMessage
+            res.message.getContent (content) ->
+                fs.writeFile 'sample.jpg', content, 'binary'
+    ```
+
+
 
 # 注意点
 * `contents.length <= 5`にしないとLINEに怒られます。
