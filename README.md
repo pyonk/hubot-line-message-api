@@ -168,3 +168,6 @@
 * `contents.length <= 5`にしないとLINEに怒られます。
     * くみあわせて使う場合はcontents.lengthを足し算した値が5を超えないようにしないと怒られます。
 * 画像のURLなどはhttpsでないと怒られます。
+
+# Special Thanks
+@shouta-dev Thank you for your contibutions! 
