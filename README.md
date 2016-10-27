@@ -154,7 +154,15 @@
                 fs.writeFile 'sample.jpg', content, 'binary'
     ```
 
+* Postback(ユーザのボタン押下など）
+   ```coffee
+    {PostbackMessage} = require 'hubot-line-message-api'
 
+    robot.hear /.*/, (res) ->
+        if res.message instanceof PostbackMessage
+            # postback.data
+            console.log(res.message.data)
+   ```
 
 # 注意点
 * `contents.length <= 5`にしないとLINEに怒られます。

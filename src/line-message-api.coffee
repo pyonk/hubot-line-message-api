@@ -21,7 +21,7 @@ class LineMessageApiAdapter extends Adapter
             # TODO: validate signeture
             events = req.body.events
             for event in events
-                {replyToken, type, source, message} = event
+                {replyToken, type, source, message, postback} = event
                 switch source.type
                     when "user"
                         from = source.userId
@@ -29,22 +29,30 @@ class LineMessageApiAdapter extends Adapter
                         from = source.groupId
                     when "room"
                         from = source.roomId
-                switch message.type
-                    when "text", "postback"
-                        text = message.text ? ""
-                        console.log "from: #{source.type} => #{from}"
-                        console.log "text: #{text}"
-                        user = @robot.brain.userForId from
-                        user.replyToken = replyToken
-                        @receive new TextMessage(user, text, message.id)
-                    when "image"
-                        text = ""
-                        user = @robot.brain.userForId from
-                        user.replyToken = replyToken
-                        @receive new ImageMessage(user, text, message.id)
-                    else
-                        console.log "This type is not supported.(#{type})"
-                    # TODO: text, postback, image以外の処理
+                console.log "from: #{source.type} => #{from}"
+                if event.type == "message"
+                    switch message.type
+                        when "text"
+                            text = message.text ? ""
+                            console.log "text: #{text}"
+                            user = @robot.brain.userForId from
+                            user.replyToken = replyToken
+                            @receive new TextMessage(user, text, message.id)
+                        when "image"
+                            text = ""
+                            user = @robot.brain.userForId from
+                            user.replyToken = replyToken
+                            @receive new ImageMessage(user, text, message.id)
+                        else
+                            # TODO: text, image以外の処理
+                            console.log "This message type is not supported.(#{message.type})"
+                else if event.type == "postback"
+                    console.log "postback.data: #{postback.data}"
+                    text = ""
+                    messageId = 0
+                    user = @robot.brain.userForId from
+                    user.replyToken = replyToken
+                    @receive new PostbackMessage(user, text, messageId, postback.data)
             @emit "connected"
 
     send: (envelope, strings...) ->
@@ -195,6 +203,10 @@ class LineMessageApiAdapter extends Adapter
                     text: content.text
                     actions: content.actions
 
+class PostbackMessage extends TextMessage
+    constructor: (@user, @text, @id, @data) ->
+        super @user, @text, @id
+
 class ContentMessage extends TextMessage
     getContent: (callback) ->
         messageId = this.id
@@ -222,3 +234,4 @@ class ImageMessage extends ContentMessage
 exports.use = (robot) ->
     new LineMessageApiAdapter(robot)
 exports.ImageMessage = ImageMessage
+exports.PostbackMessage = PostbackMessage
