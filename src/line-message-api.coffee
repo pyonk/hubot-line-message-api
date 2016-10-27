@@ -6,8 +6,7 @@ catch
 request = require "request"
 pushEP = "https://api.line.me/v2/bot/message/push"
 replyEP = "https://api.line.me/v2/bot/message/reply"
-
-
+getContentEP = "https://api.line.me/v2/bot/message/%s/content"
 
 class LineMessageApiAdapter extends Adapter
     data: {}
@@ -23,23 +22,29 @@ class LineMessageApiAdapter extends Adapter
             events = req.body.events
             for event in events
                 {replyToken, type, source, message} = event
+                switch source.type
+                    when "user"
+                        from = source.userId
+                    when "group"
+                        from = source.groupId
+                    when "room"
+                        from = source.roomId
                 switch message.type
                     when "text", "postback"
-                        switch source.type
-                            when "user"
-                                from = source.userId
-                            when "group"
-                                from = source.groupId
-                            when "room"
-                                from = source.roomId
                         text = message.text ? ""
                         console.log "from: #{source.type} => #{from}"
                         console.log "text: #{text}"
-                        user = @robot.brain.userForId replyToken
+                        user = @robot.brain.userForId from
+                        user.replyToken = replyToken
                         @receive new TextMessage(user, text, message.id)
+                    when "image"
+                        text = ""
+                        user = @robot.brain.userForId from
+                        user.replyToken = replyToken
+                        @receive new ImageMessage(user, text, message.id)
                     else
-                        console.log "This is not TEXT message."
-                        # TODO: text以外の処理
+                        console.log "This type is not supported.(#{type})"
+                    # TODO: text, postback, image以外の処理
             @emit "connected"
 
     send: (envelope, strings...) ->
@@ -110,7 +115,7 @@ class LineMessageApiAdapter extends Adapter
                   console.log body
 
     _updateDataForReply: (envelope) ->
-        replyToken = envelope.user.id
+        replyToken = envelope.user.replyToken
         @data =
             replyToken: replyToken
             messages: []
@@ -189,6 +194,31 @@ class LineMessageApiAdapter extends Adapter
                     type: "confirm"
                     text: content.text
                     actions: content.actions
- 
+
+class ContentMessage extends TextMessage
+    getContent: (callback) ->
+        messageId = this.id
+        @channelAccessToken = process.env.LINE_CHANNEL_ACCESS_TOKEN ? ""
+        url = getContentEP.replace('%s', messageId)
+        request
+            url: url
+            headers:
+                "Content-Type": "application/json"
+                "Authorization": "Bearer #{@channelAccessToken}"
+            method: "GET"
+            proxy: process.env.FIXIE_URL ? ""
+            encoding: null
+            (err, response, body) ->
+                throw err if err
+                if response.statusCode is 200
+                  console.log "success"
+                  callback(body)
+                else
+                  console.log "response error: #{response.statusCode}"
+                  console.log body
+
+class ImageMessage extends ContentMessage
+
 exports.use = (robot) ->
     new LineMessageApiAdapter(robot)
+exports.ImageMessage = ImageMessage
